@@ -5,89 +5,17 @@
 #include "database.h"
 
 using namespace std;
-
-// 엔트리 출력 함수
-void printEntry(void* value, Type type, int size = 0) {
-    switch (type) {
-    case INT: {
-        int* data = static_cast<int*>(value); // INT 타입의 값을 int 포인터로 캐스팅
-        if (data != nullptr) { // 유효한 포인터인 경우
-            if (size != 0) { // 배열의 경우
-                for (int i = 0; i < size; ++i) {
-                    std::cout << "int -> " << data[i] << std::endl; // 배열 요소 출력
-                }
-            }
-            else {
-                std::cout << "int -> " << *data << std::endl; // 배열이 아닌 경우 단일 값 출력
-            }
-        }
-        else {
-            std::cerr << "Invalid int value." << std::endl; // 유효하지 않은 포인터인 경우 오류 메시지 출력
-        }
-        break;
-    }
-    case DOUBLE: {
-        double* data = static_cast<double*>(value); // DOUBLE 타입의 값을 double 포인터로 캐스팅
-        if (data != nullptr) {
-            if (size != 0) {
-                for (int i = 0; i < size; ++i) {
-                    std::cout << "double -> " << data[i] << std::endl;
-                }
-            }
-            else {
-                std::cout << "double -> " << *data << std::endl;
-            }
-        }
-        else {
-            std::cerr << "Invalid double value." << std::endl;
-        }
-        break;
-    }
-    case STRING: {
-        std::string* data = static_cast<std::string*>(value); // STRING 타입의 값을 string 포인터로 캐스팅
-        if (data != nullptr) {
-            std::cout << "string -> \"" << *data << "\"" << std::endl;
-        }
-        else {
-            std::cerr << "Invalid string value." << std::endl;
-        }
-        break;
-    }
-    case ARRAY: {
-        Array* arr = static_cast<Array*>(value); // ARRAY 타입의 값을 Array 포인터로 캐스팅
-        if (arr != nullptr) {
-            std::cout << "array -> [";
-            for (int i = 0; i < arr->size; ++i) {
-                if (i > 0) std::cout << ", ";
-                printEntry(arr->items, arr->type); // 배열의 항목 출력
-            }
-            std::cout << "]" << std::endl;
-        }
-        else {
-            std::cerr << "Invalid array value." << std::endl;
-        }
-        break;
-    }
-    default:
-        std::cerr << "Invalid entry type." << std::endl; // 잘못된 항목 타입 오류 출력
-        break;
-    }
-}
-
-
 // 배열 입력 함수
 Array* inputArray() {
     Array* array = new Array; // 배열에 대한 포인터 동적 할당
     cout << "size: "; // 사용자에게 배열의 크기 입력을 요청하는 메시지 출력
     cin >> array->size; // 배열의 크기 입력 받기
-    array->type; // 배열의 타입 설정
+    array->type;// 배열의 타입 설정
     array->items = new void* [array->size]; // 배열의 항목에 대한 포인터 배열 동적 할당
-
+    cout << "type (int, double, string, array): "; // 항목 타입 입력 요청
+    string itemTypeStr;
+    cin >> itemTypeStr; // 항목 타입 입력 받기
     for (int i = 0; i < array->size; ++i) {
-        cout << "type (int, double, string, array): "; // 항목 타입 입력 요청
-        string itemTypeStr;
-        cin >> itemTypeStr; // 항목 타입 입력 받기
-
         // 항목 타입에 따라 처리
         if (itemTypeStr == "int")
         {
@@ -133,6 +61,74 @@ Array* inputArray() {
 
     return array; // 입력된 배열 포인터 반환
 }
+// 엔트리 출력 함수
+void printEntry(void* value, Type type, int size = 0) {
+    switch (type) {
+    case INT: {
+        int* data = static_cast<int*>(value); // INT 타입의 값을 int 포인터로 캐스팅
+        if (data != nullptr) { // 유효한 포인터인 경우
+            if (size != 0) { // 배열의 경우
+                for (int i = 0; i < size; ++i) {
+                    std::cout << data[i] << std::endl; // 배열 요소 출력
+                }
+            }
+            else {
+                std::cout << *data << std::endl; // 배열이 아닌 경우 단일 값 출력
+            }
+        }
+        else {
+            std::cerr << "Invalid int value." << std::endl; // 유효하지 않은 포인터인 경우 오류 메시지 출력
+        }
+        break;
+    }
+    case DOUBLE: {
+        double* data = static_cast<double*>(value); // DOUBLE 타입의 값을 double 포인터로 캐스팅
+        if (data != nullptr) {
+            if (size != 0) {
+                for (int i = 0; i < size; ++i) {
+                    std::cout << data[i] << std::endl;
+                }
+            }
+            else {
+                std::cout << *data << std::endl;
+            }
+        }
+        else {
+            std::cerr << "Invalid double value." << std::endl;
+        }
+        break;
+    }
+    case STRING: {
+        std::string* data = static_cast<std::string*>(value); // STRING 타입의 값을 string 포인터로 캐스팅
+        if (data != nullptr) {
+            std::cout << "\"" << *data << "\"" << std::endl;
+        }
+        else {
+            std::cerr << "Invalid string value." << std::endl;
+        }
+        break;
+    }
+    case ARRAY: {
+        Array* arr = static_cast<Array*>(value); // ARRAY 타입의 값을 Array 포인터로 캐스팅
+        if (arr != nullptr) {
+            std::cout << "array -> [";
+            for (int i = 0; i < arr->size; ++i) {
+                if (i > 0) std::cout << ", ";
+                printEntry(arr->items, arr->type, arr->size); // 배열의 항목 출력
+            }
+            std::cout << "]" << std::endl;
+        }
+        else {
+            std::cerr << "Invalid array value." << std::endl;
+        }
+        break;
+    }
+    default:
+        std::cerr << "Invalid entry type." << std::endl; // 잘못된 항목 타입 오류 출력
+        break;
+    }
+}
+
 
 int main() {
     Database database; // 데이터베이스 객체 생성
