@@ -2,32 +2,13 @@
 #include <cstring>
 #include <string>
 #include <cstdlib>
-#ifndef DATABASE_H
-#define DATABASE_H
+#include "database.h"
 
-enum Type { INT, DOUBLE, STRING, ARRAY };
-
-struct Array {
-  int size;
-  Type type;
-  void *items;
-};
-
-struct Entry {
-  Type type;
-  std::string key;
-  void *value;
-};
-
-struct Database {
-  Entry **entries;
-  int size;
-};
 
 // 엔트리를 생성한다.
-Entry *create(Type type, std::string key, void *value) {
+Entry* create(Type type, std::string key, void* value) {
     // 새로운 Entry 구조체 생성
-    Entry *entry = new Entry;
+    Entry* entry = new Entry;
 
     // 입력된 값으로 Entry 설정
     entry->type = type;
@@ -39,18 +20,18 @@ Entry *create(Type type, std::string key, void *value) {
 }
 
 // 데이터베이스를 초기화한다.
-void init(Database &database) {
+void init(Database& database) {
     // 초기 크기를 0으로 설정하고, 엔트리 배열을 nullptr로 초기화합니다.
     database.size = 0;
     database.entries = nullptr;
 }
 
 // 데이터베이스에 엔트리를 추가한다.
-void add(Database &database, Entry *entry) {
+void add(Database& database, Entry* entry) {
     // 새로운 엔트리를 추가하기 위해 엔트리 배열의 크기를 증가시킵니다.
     int newSize = database.size + 1;
     // 새로운 엔트리 배열을 할당하고 기존 엔트리를 복사합니다.
-    Entry **newEntries = new Entry*[newSize];
+    Entry** newEntries = new Entry * [newSize];
     for (int i = 0; i < database.size; ++i) {
         newEntries[i] = database.entries[i];
     }
@@ -64,7 +45,7 @@ void add(Database &database, Entry *entry) {
 }
 
 // 데이터베이스에서 키에 해당하는 엔트리를 찾는다.
-Entry *get(Database &database, std::string &key) {
+Entry* get(Database& database, std::string& key) {
     // 데이터베이스 크기만큼 반복하며 키가 일치하는 엔트리를 찾는다.
     for (int i = 0; i < database.size; ++i) {
         if (database.entries[i]->key == key) {
@@ -77,9 +58,9 @@ Entry *get(Database &database, std::string &key) {
 }
 
 // 데이터베이스에서 키에 해당하는 엔트리를 제거한다.
-void remove(Database &database, std::string &key) {
+void remove(Database& database, std::string& key) {
     // 새로운 엔트리 배열을 생성하고 초기화
-    Entry **newEntries = new Entry*[database.size];
+    Entry** newEntries = new Entry * [database.size];
     int newSize = 0;
 
     // 기존 엔트리에서 키가 일치하지 않는 엔트리를 새로운 배열에 복사
@@ -96,7 +77,7 @@ void remove(Database &database, std::string &key) {
 }
 
 // 데이터베이스를 해제한다.
-void destroy(Database &database) {
+void destroy(Database& database) {
     // 데이터베이스에 있는 모든 엔트리 메모리를 해제한다.
     for (int i = 0; i < database.size; ++i) {
         delete database.entries[i];
@@ -107,5 +88,3 @@ void destroy(Database &database) {
     database.entries = nullptr;
     database.size = 0;
 }
-
-#endif
