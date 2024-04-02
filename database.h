@@ -16,8 +16,8 @@ struct Entry {
 };
 
 struct Database {
-	Entry** entries; // 엔트리들의 배열
-	int size;        // 데이터베이스의 크기
+	int size;
+	Entry* db_array;
 };
 
 // 엔트리를 생성한다.
@@ -37,3 +37,11 @@ void remove(Database& database, std::string& key);
 
 // 데이터베이스를 해제한다.
 void destroy(Database& database);
+
+// 데이터베이스의 리스트를 출력한다.
+void list(Database& database);
+
+void initArray(Array* array);
+
+void listArray(Array& array);
+
