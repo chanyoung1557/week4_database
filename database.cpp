@@ -125,8 +125,6 @@ void destroy(Database& database) {
 		delete[] database.database_array;
 	}
 }
-
-
 void listArray(Array& array);
 // 데이터베이스에 리스트를 출력한다.
 void list(Database& database) {
@@ -154,7 +152,7 @@ void list(Database& database) {
 	}
 }
 
-// value 타입이 array 일때 초기화하고, 필요하다면 중첩배열을 만든다.
+// value 타입이 array 일때 초기화하고,  다중 중첩 배열을 입력받을 때 중첩배열을 만든다.
 void initArray(Array* array) {
 	int size;
 	std::string typeInput;

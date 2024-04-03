@@ -4,227 +4,130 @@
 #include <cstdlib>
 #include "database.h"
 
-using namespace std;
-// 배열 입력 함수
-Array* inputArray() {
-    Array* array = new Array; // 배열에 대한 포인터 동적 할당
-    cout << "size: "; // 사용자에게 배열의 크기 입력을 요청하는 메시지 출력
-    cin >> array->size; // 배열의 크기 입력 받기
-    array->type;// 배열의 타입 설정
-    array->items = new void* [array->size]; // 배열의 항목에 대한 포인터 배열 동적 할당
-    cout << "type (int, double, string, array): "; // 항목 타입 입력 요청
-    string itemTypeStr;
-    cin >> itemTypeStr; // 항목 타입 입력 받기
-        // 항목 타입에 따라 처리
-    if (itemTypeStr == "int")
-    {
-        array->type = INT;
-        int* value = new int[array->size]; // int 형 값에 대한 포인터 동적 할당
-        for (int i = 0; i < array->size; ++i) {
-            int a = 0;
-            cout << "item["<<i<<"]: ";
-            cin >> a;
-            value[i] = a;
-            array->items = value;
-        }
-        //array->items = value; // 배열의 항목에 값 할당
-    }
-    else if (itemTypeStr == "double") {
-        array->type = DOUBLE;
-        double* value = new double[array->size]; // double 형 값에 대한 배열 동적 할당
-        for (int i = 0; i < array->size; ++i) {
-            double a = 0;
-            cout << "item[" << i << "]: ";
-            cin >> a;
-            value[i] = a;
-            array->items = value; // 배열의 항목에 값 할당
-        }
-    }
-    else if (itemTypeStr == "string") {
-        array->type = STRING;
-        string* value = new string[array->size]; // 문자열 값에 대한 배열 동적 할당
-        for (int i = 0; i < array->size; ++i) {
-            cin.ignore(); // 이전 cin 입력의 개행 문자를 무시
-            cout << "item[" << i << "]: ";
-            getline(cin, value[i]); // 공백을 포함한 문자열 입력 받기
-            array->items = value; // 배열의 항목에 값 할당
-        }
-    }
-    else if (itemTypeStr == "array") {
-        array->type = ARRAY;
-        // 재귀적으로 배열 입력 받기
-        for (int i = 0; i < array->size; ++i) {
-            Array* subArray = inputArray();
-            if (subArray != nullptr) {
-                array->items = (void*)subArray; // 배열의 항목에 배열 포인터 할당
-            }
-            else {
-                delete[] array->items; // 동적 할당된 배열 메모리 해제
-                delete array; // 동적 할당된 메모리 해제
-                return nullptr; // nullptr 반환
-            }
-        }
-    }
-
-
-    return array; // 입력된 배열 포인터 반환
-}
-// 엔트리 출력 함수
-void printEntry(void* value, Type type, int size = 0) {
-    switch (type) {
-    case INT: {
-        int* data = static_cast<int*>(value); // INT 타입의 값을 int 포인터로 캐스팅
-        if (data != nullptr) { // 유효한 포인터인 경우
-            if (size != 0) { // 배열의 경우
-                for (int i = 0; i < size; ++i) {
-                    std::cout << data[i]; // 배열 요소 출력
-                    if (i != size-1) std::cout << ", ";
-                }
-            }
-            else {
-                std::cout << *data << std::endl; // 배열이 아닌 경우 단일 값 출력
-            }
-        }
-        else {
-            std::cerr << "Invalid int value." << std::endl; // 유효하지 않은 포인터인 경우 오류 메시지 출력
-        }
-        break;
-    }
-    case DOUBLE: {
-        double* data = static_cast<double*>(value); // DOUBLE 타입의 값을 double 포인터로 캐스팅
-        if (data != nullptr) {
-            if (size != 0) {
-                for (int i = 0; i < size; ++i) {
-                    std::cout << data[i];
-                    if (i != size-1) std::cout << ", ";
-                }
-            }
-            else {
-                std::cout << *data << std::endl;
-            }
-        }
-        else {
-            std::cerr << "Invalid double value." << std::endl;
-        }
-        break;
-    }
-    case STRING: {
-        std::string* data = static_cast<std::string*>(value); // STRING 타입의 값을 string 포인터로 캐스팅
-        if (data != nullptr) {
-            std::cout << "\"" << *data << "\"" << std::endl;
-        }
-        else {
-            std::cerr << "Invalid string value." << std::endl;
-        }
-        break;
-    }
-    case ARRAY: {
-        Array* arr = static_cast<Array*>(value); // ARRAY 타입의 값을 Array 포인터로 캐스팅
-        if (arr != nullptr) {
-            std::cout << "[";
-            printEntry(arr->items, arr->type, arr->size); // 배열의 항목 출력
-            std::cout << "]" << std::endl;
-        }
-        else {
-            std::cerr << "Invalid array value." << std::endl;
-        }
-        break;
-    }
-    default:
-        std::cerr << "Invalid entry type." << std::endl; // 잘못된 항목 타입 오류 출력
-        break;
-    }
-}
-
-
 int main() {
-    Database database; // 데이터베이스 객체 생성
-    init(database); // 데이터베이스 초기화
+    // 사용자에게 입력할 명령어를 저장할 변수
+    std::string cmType = "command (list, add, get, del, exit): ";
+    std::string command, key, typeInput;
+    int int_value; // int 타입의 값
+    double dou_value; // double 타입의 값
+    void* value = &int_value; // 입력된 값의 포인터, 초기값은 int_value로 설정
 
-    string command; // 사용자 입력을 저장할 변수
+    Database database; // 데이터베이스 객체
+    Entry entry; // 엔트리 객체
+    Entry* entry_p = &entry; // 엔트리 포인터
+    Type type = INT; // 엔트리의 타입, 초기값은 INT로 설정
+
+    // 데이터베이스 초기화
+    init(database);
+    // 사용자 입력 받기
     while (true) {
-        cout << "command (list, add, get, del, exit): ";
-        cin >> command;
+        std::cout << cmType; // 사용자에게 명령어 입력을 요청하는 메시지 출력
+        std::cin >> command; // 사용자 입력 받기
 
+        // command 가 list 인 경우
         if (command == "list") {
-            // 전체 엔트리 출력
-            for (int i = 0; i < database.size; ++i) { // 데이터베이스의 크기만큼 반복
-                Entry* entry = database.entries[i]; // 현재 엔트리 가져오기
-                cout << entry->key << ": "; // 엔트리의 키 출력
-                printEntry(entry->value, entry->type); // 엔트리 값 출력
-            }
+            list(database); // 데이터베이스의 모든 엔트리 출력
         }
+        // command 가 add 인 경우
         else if (command == "add") {
-            string key, valueType, valueStr; // 키, 값의 타입, 값 문자열을 저장할 변수 선언
-            cout << "key: ";
-            cin >> key; // 키 입력 받기
-
-            cout << "type (int, double, string, array): ";
-            cin >> valueType; // 값의 타입 입력 받기
-
-            Type type; // 입력된 값의 타입을 저장할 변수 선언
-            // 타입에 따라 처리
-            if (valueType == "int") {
-                type = INT; // 입력된 값의 타입이 int일 경우
-                int* value = new int; // int 형 값에 대한 포인터 동적 할당
-                cin >> *value;
-                add(database, create(type, key, (void*)value)); // 데이터베이스에 새 항목 추가
+            std::cout << "key: ";
+            std::cin >> key;
+            std::cout << "type (int, double, string, array): ";
+            std::cin >> typeInput;
+            std::cout << "value: ";
+            // 타입에 따라 값 입력 받기
+            if (typeInput == "int") {
+                type = INT;
+                std::cin >> int_value;
+                value = &int_value;
+                entry_p = create(type, key, value);
             }
-            else if (valueType == "double") {
-                type = DOUBLE; // 입력된 값의 타입이 double일 경우
-                double* value = new double; // double 형 값에 대한 포인터 동적 할당
-                cin >> *value;
-                add(database, create(type, key, (void*)value)); // 데이터베이스에 새 항목 추가
+            else if (typeInput == "double") {
+                type = DOUBLE;
+                std::cin >> dou_value;
+                value = &dou_value;
+                entry_p = create(type, key, value);
             }
-            else if (valueType == "string") {
-                type = STRING; // 입력된 값의 타입이 string일 경우
-                cin.ignore(); // 이전 cin 입력의 개행 문자를 무시
-                getline(cin, valueStr); // 공백을 포함한 문자열 입력 받기
-                string* value = new string(valueStr); // 문자열 값에 대한 포인터 동적 할당
-                add(database, create(type, key, (void*)value)); // 데이터베이스에 새 항목 추가
+            else if (typeInput == "string") {
+                type = STRING;
+                std::cin.ignore(); // 입력 버퍼 비우기
+                std::string str_input;
+                std::getline(std::cin, str_input);
+                value = new std::string(str_input); // 문자열을 동적할당하여 value에 저장
+                entry_p = create(type, key, value);
             }
-            else if (valueType == "array") {
-                type = ARRAY; // 입력된 값의 타입이 array일 경우
-                Array* array= inputArray(); // 배열 입력 받기
-                if (array != nullptr) { // 유효한 배열이 입력된 경우
-                    add(database, create(type, key, (void*)array)); // 데이터베이스에 새 항목 추가
-                }
-                else {
-                    break;
-                }
+            else if (typeInput == "array") {
+                // 배열 객체 생성 및 초기화
+                Array* arr_p = new Array;
+                arr_p->size = 0;
+                arr_p->type = INT;
+                arr_p->items = nullptr;
+                initArray(arr_p);
+                value = static_cast<Array*>(arr_p);
+                entry_p = create(ARRAY, key, value);
             }
             else {
-                cerr << "Invalid value type." << endl; // 잘못된 값 타입 오류 출력
+                std::cerr << "invalid type" << std::endl; // 잘못된 타입 오류 출력
+                continue; // 반복문 계속 진행
             }
+
+            // 데이터베이스에 엔트리 추가
+            if (database.size == 0) { // 데이터베이스가 비어있는 경우
+                database.db_array[0] = *entry_p;
+                database.size++;
+            }
+            else { // 데이터베이스에 이미 엔트리가 있는 경우
+                add(database, entry_p);
+            }
+
         }
+
+        // command 가 get 인 경우
         else if (command == "get") {
-            string key; // 키를 저장할 변수 선언
-            cout << "Enter key: "; // 사용자에게 키 입력을 요청하는 메시지 출력
-            cin >> key; // 키 입력 받기
-            Entry* entry = get(database, key); // 데이터베이스에서 해당 키의 엔트리 가져오기
-            if (entry != nullptr) {
-                cout << entry->key << ": "; // 엔트리의 키 출력
-                printEntry(entry->value, entry->type); // 엔트리 값 출력
+            std::cout << "key: ";
+            std::cin >> key;
+            entry_p = get(database, key);
+            if (entry_p->key == key) {
+                std::cout << entry_p->key << ": ";
+
+                // 엔트리의 값 출력
+                if (entry_p->type == INT) {
+                    std::cout << *(int*)(entry_p->value);
+                }
+                else if (entry_p->type == DOUBLE) {
+                    std::cout << *(double*)(entry_p->value);
+                }
+                else if (entry_p->type == STRING) {
+                    std::cout << "\"" << *(std::string*)(entry_p->value) << "\"";
+                }
+                else if (entry_p->type == ARRAY) {
+                    Array* arr = static_cast<Array*>(entry_p->value);
+                    listArray(*arr); // 배열의 항목 출력
+                }
+                std::cout << std::endl;
             }
-            else {
-                cerr << "Entry not found." << endl; // 엔트리가 없는 경우 오류 출력
+            else { // 해당하는 key를 찾지 못한 경우
+                std::cerr << "can't found" << std::endl;
             }
+
         }
+        // command 가 del 인 경우
         else if (command == "del") {
-            string key; // 삭제할 키를 저장할 변수 선언
-            cout << "Enter key: "; // 사용자에게 키 입력을 요청하는 메시지 출력
-            cin >> key; // 키 입력 받기
-            remove(database, key); // 데이터베이스에서 해당 키의 항목 삭제
+            std::cout << "key: ";
+            std::cin >> key;
+            remove(database, key); // 해당 key의 엔트리 삭제
         }
+        // command 가 exit 인 경우
         else if (command == "exit") {
-            destroy(database); // 데이터베이스 객체 소멸
-            break; // 루프 종료
+            destroy(database); // 데이터베이스 객체 해제
+            exit(1);
         }
+        // 잘못된 명령어인 경우
         else {
-            cerr << "Invalid command." << endl; // 잘못된 명령어 오류 출력
+            std::cerr << "invalid command" << std::endl;
         }
+
+        std::cout << std::endl;
     }
-
-    return 0; // 프로그램 종료
+    return 0;
 }
-
