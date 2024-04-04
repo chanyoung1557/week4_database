@@ -129,5 +129,8 @@ int main() {
 
         std::cout << std::endl;
     }
+    // 프로그램이 여기까지 도달했다는 것은 비정상적인 종료 상황일 수 있음
+    // 이 경우에도 데이터베이스 객체를 해제해야 함
+    destroy(database);
     return 0;
 }
